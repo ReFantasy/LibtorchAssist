@@ -61,16 +61,17 @@ namespace LibtorchAsssst
 	 * @return torch::Tensor
 	 */
 	template<size_t K, size_t C, size_t M, size_t N>
-	torch::Tensor Array2Tensor(const float (& array4d)[C][M][N])
+	torch::Tensor Array2Tensor(const float (& array4d)[K][C][M][N])
 	{
 		auto tensor = torch::from_blob((float*)array4d, { K, C, M, N }, torch::kFloat);
 		return tensor.clone();
 	}
 
 	template<size_t K, size_t C, size_t M, size_t N>
-	torch::Tensor Array2Tensor(float (&& array4d)[C][M][N])
+	torch::Tensor Array2Tensor(const float (&& array4d)[K][C][M][N])
 	{
-		return Array2Tensor(array4d);
+		auto tensor = torch::from_blob((float*)array4d, { K, C, M, N }, torch::kFloat);
+		return tensor.clone();
 	}
 
 
