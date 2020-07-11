@@ -42,7 +42,7 @@ namespace LibtorchAsssst
 	torch::Tensor Array2Tensor(const float (& array3d)[C][M][N])
 	{
 		auto tensor = torch::from_blob((float*)array3d, { C, M, N }, torch::kFloat);
-		return tensor;
+		return tensor.clone();
 	}
 
 	template<size_t C, size_t M, size_t N>
@@ -64,7 +64,7 @@ namespace LibtorchAsssst
 	torch::Tensor Array2Tensor(const float (& array4d)[C][M][N])
 	{
 		auto tensor = torch::from_blob((float*)array4d, { K, C, M, N }, torch::kFloat);
-		return tensor;
+		return tensor.clone();
 	}
 
 	template<size_t K, size_t C, size_t M, size_t N>
