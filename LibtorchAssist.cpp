@@ -4,7 +4,15 @@
 
 #include "LibtorchAssist.h"
 #include <iostream>
-int main()
+
+namespace LibtorchAsssst
 {
-	std::cout<<"ok"<<std::endl;
+	int Test(int n)
+	{
+		std::cout << "LibtorchAsssst Test is OK" << std::endl;
+		std::cout << "The function input is:" << n << ", return:" << n + 1 << std::endl;
+		return n + 1;
+	}
+
 }
+
