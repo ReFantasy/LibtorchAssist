@@ -17,11 +17,18 @@ namespace LibtorchAsssst
 	 * @return torch::Tensor
 	 */
 	template<size_t M, size_t N>
+	torch::Tensor Array2Tensor(const float (& array2d)[M][N])
+	{
+		auto tensor = torch::from_blob((float*)array2d, { M, N }, torch::kFloat);
+		return tensor.clone();
+	}
+
+	template<size_t M, size_t N>
 	torch::Tensor Array2Tensor(float (&& array2d)[M][N])
 	{
-		auto tensor = torch::from_blob(array2d, { M, N }, torch::kFloat);
-		return tensor;
+		return Array2Tensor(array2d);
 	}
+
 
 	/**
 	 * C++数组转 torch::Tensor
@@ -32,10 +39,16 @@ namespace LibtorchAsssst
 	 * @return torch::Tensor
 	 */
 	template<size_t C, size_t M, size_t N>
+	torch::Tensor Array2Tensor(const float (& array3d)[C][M][N])
+	{
+		auto tensor = torch::from_blob((float*)array3d, { C, M, N }, torch::kFloat);
+		return tensor;
+	}
+
+	template<size_t C, size_t M, size_t N>
 	torch::Tensor Array2Tensor(float (&& array3d)[C][M][N])
 	{
-		auto tensor = torch::from_blob(array3d, { C, M, N }, torch::kFloat);
-		return tensor;
+		return Array2Tensor(array3d);
 	}
 
 	/**
@@ -48,10 +61,16 @@ namespace LibtorchAsssst
 	 * @return torch::Tensor
 	 */
 	template<size_t K, size_t C, size_t M, size_t N>
+	torch::Tensor Array2Tensor(const float (& array4d)[C][M][N])
+	{
+		auto tensor = torch::from_blob((float*)array4d, { K, C, M, N }, torch::kFloat);
+		return tensor;
+	}
+
+	template<size_t K, size_t C, size_t M, size_t N>
 	torch::Tensor Array2Tensor(float (&& array4d)[C][M][N])
 	{
-		auto tensor = torch::from_blob(array4d, { K, C, M, N }, torch::kFloat);
-		return tensor;
+		return Array2Tensor(array4d);
 	}
 
 
