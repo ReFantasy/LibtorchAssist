@@ -3,3 +3,8 @@
 //
 
 #include "array_to_tensor.h"
+
+namespace LibtorchAsssst
+{
+
+}

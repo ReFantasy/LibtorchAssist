@@ -2,8 +2,9 @@
 // Created by TDL on 2020/7/11.
 //
 
-#ifndef __MNIST_LIBTORCHASSIST_H__
-#define __MNIST_LIBTORCHASSIST_H__
+#ifndef _LIBTORCHASSIST_H__
+#define _LIBTORCHASSIST_H__
+
 #include "array_to_tensor.h"
 
 namespace LibtorchAsssst
@@ -12,4 +13,4 @@ namespace LibtorchAsssst
 }
 
 
-#endif//__MNIST_LIBTORCHASSIST_H__
+#endif//_LIBTORCHASSIST_H__
