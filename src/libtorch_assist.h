@@ -6,6 +6,7 @@
 #define _LIBTORCHASSIST_H__
 
 #include "array_to_tensor.h"
+#include "mat2tensor.h"
 
 namespace LibtorchAsssst
 {
