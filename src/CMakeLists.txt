@@ -1,11 +1,7 @@
-# 配置依赖
-FIND_PACKAGE(Torch REQUIRED)
-#find_package(OpenCV REQUIRED)
-
 AUX_SOURCE_DIRECTORY(. SRC_LIST)
 
 ADD_LIBRARY(LibtorchAssist STATIC ${SRC_LIST})
-TARGET_LINK_LIBRARIES(LibtorchAssist ${TORCH_LIBRARIES} ) #${OpenCV_LIBS}
+TARGET_LINK_LIBRARIES(LibtorchAssist ${TORCH_LIBRARIES} ${OpenCV_LIBS}) #
 
 # 拷贝include文件到生成目录
 FILE(GLOB HEADER_FILE ./*.h ./*.hpp) #所有头文件存入变量
