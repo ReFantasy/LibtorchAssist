@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(LibtorchAssist)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # 编译版本
 #SET(CMAKE_BUILD_TYPE "Release")
