@@ -4,60 +4,148 @@
 #include <iostream>
 #include <filesystem>
 
+class Dataset :public torch::data::Dataset<Dataset>
+{
+public:
+	Dataset(std::filesystem::path input_path, std::filesystem::path labels_path)
+	{
+		data = LibtorchAsssst::ReadImagesFromFolder(input_path, 1, { 256,256 }).to(torch::kFloat);
+		data.div_(255);
+		labels = LibtorchAsssst::ReadImagesFromFolder(labels_path, 1, { 256,256 }).to(torch::kFloat);
+		labels.div_(255);
+	}
+
+	torch::data::Example<> get(size_t index)override
+	{
+		return { data[index], labels[index] };
+	}
+
+	torch::optional<size_t> size()const override
+	{
+		return labels.size(0);
+	}
+
+private:
+	torch::Tensor data;
+	torch::Tensor labels;
+};
+
+struct Net :public torch::nn::Module
+{
+	Net()
+		:conv1(torch::nn::Conv2dOptions(3, 6, 3).padding(1)),
+		conv2(torch::nn::Conv2dOptions(6, 8, 3).padding(1)),
+		conv3(torch::nn::Conv2dOptions(8, 16, 3).padding(1)),
+		conv4(torch::nn::Conv2dOptions(16, 32, 3).padding(1)),
+		conv5(torch::nn::Conv2dOptions(32, 64, 3).padding(1)),
+		conv6(torch::nn::Conv2dOptions(64, 32, 3).padding(1)),
+		conv7(torch::nn::Conv2dOptions(32, 8, 3).padding(1)),
+		conv8(torch::nn::Conv2dOptions(8, 6, 3).padding(1)),
+		conv9(torch::nn::Conv2dOptions(6, 3, 3).padding(1))
+	{
+		register_module("conv1", conv1);
+		register_module("conv2", conv2);
+		register_module("conv3", conv3);
+		register_module("conv4", conv4);
+		register_module("conv5", conv5);
+		register_module("conv6", conv6);
+		register_module("conv7", conv7);
+		register_module("conv8", conv8);
+		register_module("conv9", conv9);
+	}
+
+		torch::Tensor forward(torch::Tensor x)
+	{
+
+		x = torch::relu(conv1(x));
+
+		x = torch::relu(conv2(x));
+
+		x = torch::relu(conv3(x));
+
+		x = torch::relu(conv4(x));
+
+		x = torch::relu(conv5(x));
+
+		x = torch::relu(conv6(x));
+
+		x = torch::relu(conv7(x));
+
+		x = torch::relu(conv8(x));
+
+		x = torch::relu(conv9(x));
+
+		return x;
+	}
+
+
+
+		torch::nn::Conv2d conv1{ nullptr }, conv2{ nullptr }, conv3{ nullptr } , conv4{ nullptr }, conv5{ nullptr }, conv6{ nullptr }, conv7{ nullptr }, conv8{ nullptr }, conv9{ nullptr };
+};
+
+
 using namespace std;
 int main()
 {
-	std::filesystem::path images_path("F:\\mixtrain\\input");
-	
-	auto img_op = [](cv::Mat img)
+	int kEpoch = 1000;
+	auto device = torch::Device(torch::kCUDA);
+	int batch_size = 3;
+	// 创建数据集
+	std::filesystem::path input_path("F:\\mixtrain\\10_input");
+	std::filesystem::path labels_path("F:\\mixtrain\\10_label");
+	auto src_dataset = Dataset(input_path, labels_path);
+	auto dataset = src_dataset.map(torch::data::transforms::Stack<>());
+
+
+	// 数据加载器
+	auto data_loader = torch::data::make_data_loader(dataset, torch::data::DataLoaderOptions().batch_size(batch_size));
+
+	Net net;
+	net.to(device);
+
+	// 优化器
+	//torch::optim::SGD optimizer(net.parameters(), torch::optim::SGDOptions(0.01));
+	torch::optim::Adam optimizer(net.parameters(), torch::optim::AdamOptions(2e-4).betas(std::tuple<double, double>{ 0.5, 0.5 }));
+
+	net.train();
+	for (int i = 0; i < kEpoch; i++)
 	{
-		cv::resize(img, img, { 200,200 });
-		return img;
-	};
+		for (auto& batch : *data_loader)
+		{
+			auto data = batch.data.to(device);
 
-	auto images_tensor = LibtorchAsssst::ReadImagesFromFolder(images_path, 1, img_op);
+			auto target = batch.target.to(device);
 
-	std::cout << images_tensor.sizes() << std::endl;
+			optimizer.zero_grad();
 
-	auto m1 = LibtorchAsssst::Tensor2Mat(images_tensor.index({ 1 }));
+			auto output = net.forward(data);
+			auto loss = torch::mse_loss(output, target);
+			
+			loss.backward();
 
-	cv::imshow("1", m1);
+			optimizer.step();
+
+			printf("%5.5f\n", loss.item<float>());
+
+
+		}
+		std::cout << "epoch: " << i << std::endl;
+	}
+
+
+	auto _data = src_dataset.get(0).data;
+	auto src = LibtorchAsssst::Tensor2Mat(_data*255);
+
+	net.eval();
+	auto x = _data.unsqueeze(0);
+	x = x.to(torch::kFloat).to(device);
+	auto y = net.forward(x).squeeze().to(torch::kCPU);
+	auto dst = LibtorchAsssst::Tensor2Mat(y*256);
+
+	cv::imshow("s", src);
+	cv::imshow("p", dst);
+
 
 	cv::waitKey();
-
-
-	/*auto image1 = cv::imread("F:/mixtrain/label/1.jpg", 1);
-	auto image2 = cv::imread("F:/mixtrain/label/2.jpg", 1);
-	cv::resize(image1, image1, cv::Size(600, 600));
-	cv::resize(image2, image2, cv::Size(600, 600));
-
-	auto t1 = LibtorchAsssst::Mat2Tensor(image1);
-	auto t2 = LibtorchAsssst::Mat2Tensor(image2);
-	
-
-	std::cout << t1.sizes() << std::endl;
-	std::cout << t2.sizes() << std::endl;
-
-	std::vector<torch::Tensor>ts;
-	ts.push_back(t1);
-	ts.push_back(t2);
-
-	torch::TensorList list(ts);
-
-	auto a = torch::cat(list);
-	auto b = torch::stack(list);
-
-	std::cout << a.sizes() << std::endl;
-	std::cout << b.sizes() << std::endl;
-
-	auto m1 = LibtorchAsssst::Tensor2Mat( b.index({ 0 }));
-
-	cv::imshow("1", m1);
-
-	cv::waitKey();*/
-
-	
-	
-
 	return 0;
 }
