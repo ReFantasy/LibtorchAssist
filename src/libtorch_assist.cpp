@@ -48,5 +48,57 @@ namespace LibtorchAsssst
 		return img;
 	}
 
+	std::vector<torch::Tensor> ReadImagesFromFolderToVector(std::filesystem::path path, int flags /*= 1*/, std::function<cv::Mat(cv::Mat)> img_op/* nullptr */)
+	{
+		// 判断路径是否存在
+		if (!std::filesystem::exists(path))
+		{
+			throw "path is not exist!";
+		}
+
+		std::vector<torch::Tensor> tensors;
+		auto file_lists = std::filesystem::directory_iterator(path);
+		for (auto& file : file_lists)
+		{
+			// 读取当前目录下的所有非目录文件
+			if (file.status().type() != std::filesystem::file_type::directory)
+			{
+				auto cv_image = cv::imread(file.path().generic_string(), flags);
+
+				if (img_op)
+				{
+					cv_image = img_op(cv_image);
+				}
+
+				auto tensor_image = Mat2Tensor(cv_image);
+				tensors.push_back(tensor_image);
+			}
+		}
+
+		return tensors;
+	}
+
+	torch::Tensor ReadImagesFromFolder(std::filesystem::path path, int flags, std::function<cv::Mat(cv::Mat)> img_op)
+	{
+		
+		auto tensors = ReadImagesFromFolderToVector(path, flags, img_op);
+
+		// 增加一个维度并拼接
+		auto _tensors = torch::stack(tensors);
+		return _tensors;
+	}
+
+
+
+	torch::Tensor ReadImagesFromFolder(std::filesystem::path path, int flags /*= 1*/, cv::Size sz)
+	{
+		auto img_op = [sz](cv::Mat img)
+		{
+			cv::resize(img, img, sz);
+			return img;
+		};
+		return ReadImagesFromFolder(path, flags, img_op);
+	}
+
 }
 
