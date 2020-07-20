@@ -15,35 +15,29 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 
+
 if (UNIX AND NOT APPLE)
     # include Pytorch
     set(Torch_DIR "/home/tdl/software/libtorch/share/cmake/Torch")
-    find_package(Torch REQUIRED)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-    include_directories(${TORCH_INCLUDE_DIRS})
-
     # OpenCV
     set(OpenCV_DIR "/home/tdl/software/OpenCV/build_debug_x64/install/share/OpenCV/")
-    find_package(OpenCV REQUIRED)
-    include_directories(${OpenCV_INCLUDE_DIRS})
-
 elseif (WIN32)
-    MESSAGE(STATUS "windows")
-    # Pytorch
-    SET(Torch_DIR "D:\\libtorch-win-shared-with-deps-debug-1.5.1+cu101\\libtorch\\share\\cmake\\Torch")
-    FIND_PACKAGE(Torch REQUIRED)
-    INCLUDE_DIRECTORIES(${TORCH_INCLUDE_DIRS})
-
-    #配置 OpenCV
-    set(OpenCV_DIR "D:\\opencv-4.3.0\\build_debug_x64\\install")
-    find_package(OpenCV REQUIRED)
+	IF(CMAKE_BUILD_TYPE MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES "None")      
+        SET(Torch_DIR "D:\\Libtorch\\Debug\\share\\cmake\\Torch")
+		   
+    ELSEIF (CMAKE_BUILD_TYPE MATCHES "Release")
+        SET(Torch_DIR "D:\\Libtorch\\Release\\share\\cmake\\Torch")
+	ENDIF()
 elseif (APPLE)
-    MESSAGE(STATUS "mac os")
-    FIND_PACKAGE(Torch REQUIRED)
-    find_package(OpenCV REQUIRED)
+    
 endif ()
 
+find_package(OpenCV REQUIRED)
+INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+FIND_PACKAGE(Torch REQUIRED)    
+INCLUDE_DIRECTORIES(${TORCH_INCLUDE_DIRS})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(test)
