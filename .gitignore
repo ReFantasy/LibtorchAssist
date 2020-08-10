@@ -2,4 +2,7 @@ cmake*/
 .idea/
 .DS_Store
 build/
+data/
+mixtrain/
+
 

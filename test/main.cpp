@@ -1,8 +1,10 @@
+#include <iostream>
+#include <string>
+#include <filesystem>
 #include <opencv2/opencv.hpp>
 #include <torch/torch.h>
 #include "libtorch_assist.h"
-#include <iostream>
-#include <filesystem>
+
 
 class Dataset :public torch::data::Dataset<Dataset>
 {
@@ -87,23 +89,27 @@ struct Net :public torch::nn::Module
 using namespace std;
 int main()
 {
-	int kEpoch = 1000;
+	int kEpoch = 20000;
 	auto device = torch::Device(torch::kCUDA);
-	int batch_size = 3;
-	// 创建数据集
-	std::filesystem::path input_path("F:\\mixtrain\\10_input");
-	std::filesystem::path labels_path("F:\\mixtrain\\10_label");
+	int batch_size = 5;
+
+	
+	auto data_root_dir = std::filesystem::current_path().parent_path();
+	auto input_path = (data_root_dir / "mixtrain/input").make_preferred();
+	auto labels_path = (data_root_dir / "mixtrain/label").make_preferred();
+	std::cout << input_path << std::endl;
+	std::cout << labels_path << std::endl;
+
+	
 	auto src_dataset = Dataset(input_path, labels_path);
 	auto dataset = src_dataset.map(torch::data::transforms::Stack<>());
 
-
-	// 数据加载器
 	auto data_loader = torch::data::make_data_loader(dataset, torch::data::DataLoaderOptions().batch_size(batch_size));
 
 	Net net;
 	net.to(device);
 
-	// 优化器
+
 	//torch::optim::SGD optimizer(net.parameters(), torch::optim::SGDOptions(0.01));
 	torch::optim::Adam optimizer(net.parameters(), torch::optim::AdamOptions(2e-4).betas(std::tuple<double, double>{ 0.5, 0.5 }));
 
@@ -120,7 +126,7 @@ int main()
 
 			auto output = net.forward(data);
 			auto loss = torch::mse_loss(output, target);
-			
+
 			loss.backward();
 
 			optimizer.step();
@@ -132,7 +138,7 @@ int main()
 		std::cout << "epoch: " << i << std::endl;
 	}
 
-
+	
 	auto _data = src_dataset.get(0).data;
 	auto src = LibtorchAsssst::Tensor2Mat(_data*255);
 

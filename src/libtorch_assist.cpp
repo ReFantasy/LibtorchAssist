@@ -50,9 +50,10 @@ namespace LibtorchAsssst
 
 	std::vector<torch::Tensor> ReadImagesFromFolderToVector(std::filesystem::path path, int flags /*= 1*/, std::function<cv::Mat(cv::Mat)> img_op/* nullptr */)
 	{
-		// ÅÐ¶ÏÂ·¾¶ÊÇ·ñ´æÔÚ
+		// ï¿½Ð¶ï¿½Â·ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 		if (!std::filesystem::exists(path))
 		{
+			std::cout<<"path is not exist!"<<std::endl;
 			throw "path is not exist!";
 		}
 
@@ -60,7 +61,7 @@ namespace LibtorchAsssst
 		auto file_lists = std::filesystem::directory_iterator(path);
 		for (auto& file : file_lists)
 		{
-			// ¶ÁÈ¡µ±Ç°Ä¿Â¼ÏÂµÄËùÓÐ·ÇÄ¿Â¼ÎÄ¼þ
+			// ï¿½ï¿½È¡ï¿½ï¿½Ç°Ä¿Â¼ï¿½Âµï¿½ï¿½ï¿½ï¿½Ð·ï¿½Ä¿Â¼ï¿½Ä¼ï¿½
 			if (file.status().type() != std::filesystem::file_type::directory)
 			{
 				auto cv_image = cv::imread(file.path().generic_string(), flags);
@@ -83,7 +84,7 @@ namespace LibtorchAsssst
 		
 		auto tensors = ReadImagesFromFolderToVector(path, flags, img_op);
 
-		// Ôö¼ÓÒ»¸öÎ¬¶È²¢Æ´½Ó
+		// ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Î¬ï¿½È²ï¿½Æ´ï¿½ï¿½
 		auto _tensors = torch::stack(tensors);
 		return _tensors;
 	}
